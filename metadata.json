@@ -1,0 +1,6 @@
+{
+  "name": "Sequence Multiplayer",
+  "description": "An online real-life Sequence board game with global real-time matchmaking lobbies, smart AI bot agents, local pass-and-play, a real-time room chat, and tactile synthesized sound effects.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

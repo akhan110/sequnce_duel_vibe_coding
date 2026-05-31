@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net default catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions for validating requests
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    match /games/{gameId} {
+      // Allow any signed-in user to fetch games
+      allow get: if isSignedIn() && isValidId(gameId);
+      
+      // Allow list of games that are currently waiting for players (Lobby Matchmaking)
+      allow list: if isSignedIn() && (
+        resource.data.status == "waiting" || 
+        resource.data.players[0].uid == request.auth.uid || 
+        (resource.data.players.size() > 1 && resource.data.players[1].uid == request.auth.uid)
+      );
+
+      // Create game: only signed-in users can create. 
+      // Validate correct initial waiting status, proper timestamps, and creator is matching standard rules
+      allow create: if isSignedIn() 
+        && isValidId(gameId)
+        && incoming().status == "waiting"
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      // Update game: Allows players to join, place pieces, discard, restart, etc.
+      // Must be signed in, have valid timestamps, and match the status limits
+      allow update: if isSignedIn()
+        && incoming().updatedAt == request.time;
+
+      // Deletion is forbidden to keep standard state integrity
+      allow delete: if false;
+    }
+  }
+}

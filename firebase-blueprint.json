@@ -1,0 +1,69 @@
+{
+  "entities": {
+    "Game": {
+      "title": "Sequence Multiplayer Game Session",
+      "description": "Represents an online active, waiting, or completed game of Sequence.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier of the game room."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["waiting", "playing", "completed"],
+          "description": "Match status."
+        },
+        "players": {
+          "type": "array",
+          "description": "List of active players in the game."
+        },
+        "currentTurn": {
+          "type": "string",
+          "description": "UID of the player currently making a move."
+        },
+        "boardChips": {
+          "type": "object",
+          "description": "Tracks which row_col cell has which player's color. Key format represents 'row_col'."
+        },
+        "deckCount": {
+          "type": "number",
+          "description": "Remaining cards count in the draw deck."
+        },
+        "discardPile": {
+          "type": "array",
+          "description": "Move and action log, as well as cards discarded."
+        },
+        "lastPlay": {
+          "type": "object",
+          "description": "Details of the most recently executed move."
+        },
+        "winner": {
+          "type": "string",
+          "description": "Player UID of the winner. Null if undecided."
+        },
+        "winningSequences": {
+          "type": "array",
+          "description": "Indices coordinates of cells making up the winning 5-in-a-row sequences."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Session creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Session last modification timestamp."
+        }
+      },
+      "required": ["id", "status", "players", "currentTurn", "boardChips"]
+    }
+  },
+  "firestore": {
+    "games/{gameId}": {
+      "schema": "Game",
+      "description": "Collection hosting all active and historic multiplayer game matches of Sequence."
+    }
+  }
+}

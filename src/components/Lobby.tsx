@@ -328,9 +328,9 @@ export default function Lobby({
                         </button>
 
                         <div className="flex items-center my-1.5 opacity-60">
-                          <hr className="flex-1 border-slate-205" />
-                          <span className="text-[9px] text-slate-450 font-mono px-3 uppercase tracking-widest shrink-0">or secure verification</span>
-                          <hr className="flex-1 border-slate-205" />
+                          <hr className="flex-1 border-slate-200" />
+                          <span className="text-[9px] text-slate-400 font-mono px-3 uppercase tracking-widest shrink-0">AUTHENTICATE CHANNELS</span>
+                          <hr className="flex-1 border-slate-200" />
                         </div>
 
                         <p className="text-[11px] text-slate-500 font-sans leading-relaxed">
@@ -470,6 +470,74 @@ export default function Lobby({
                   exit={{ opacity: 0, x: -10 }}
                   className="flex flex-col gap-4 h-full"
                 >
+                  {/* Game Configuration in the Local Pass & Play / Bot Tab */}
+                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col gap-3.5 shadow-sm text-left">
+                    <div className="flex flex-col gap-1">
+                      <h3 className="text-[10px] font-mono uppercase tracking-widest text-[#3ab3c2] font-black">Local Game Format Settings</h3>
+                      <p className="text-[9px] text-slate-450 uppercase tracking-wider font-extrabold leading-none">Apply config to your offline Match & Bot plays</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      {/* Format Choice */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500 font-bold">Match Format</span>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedMaxPlayers(2)}
+                            className={`py-1.5 px-2 rounded-lg border text-center transition font-sans text-[9px] font-black uppercase flex items-center justify-center gap-1 cursor-pointer ${
+                              selectedMaxPlayers === 2
+                                ? 'bg-cyan-50 border-[#3ab3c2] text-[#3ab3c2] shadow-xs'
+                                : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'
+                            }`}
+                          >
+                            👤 1v1 Local
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedMaxPlayers(4)}
+                            className={`py-1.5 px-2 rounded-lg border text-center transition font-sans text-[9px] font-black uppercase flex items-center justify-center gap-1 cursor-pointer ${
+                              selectedMaxPlayers === 4
+                                ? 'bg-cyan-50 border-[#3ab3c2] text-[#3ab3c2] shadow-xs'
+                                : 'bg-white border-slate-200 hover:border-slate-300 text-slate-650'
+                            }`}
+                          >
+                            👥 Teams 4P
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Score Target choice */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] font-mono uppercase tracking-widest text-slate-500 font-bold">Sequences to Win</span>
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSequencesToWin(1)}
+                            className={`py-1.5 px-2 rounded-lg border text-center transition font-sans text-[9px] font-black uppercase flex items-center justify-center gap-1 cursor-pointer ${
+                              selectedSequencesToWin === 1
+                                ? 'bg-cyan-50 border-[#3ab3c2] text-[#3ab3c2] shadow-xs'
+                                : 'bg-white border-slate-200 hover:border-slate-300 text-slate-600'
+                            }`}
+                          >
+                            ⚡ 1 Seq
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSequencesToWin(2)}
+                            className={`py-1.5 px-2 rounded-lg border text-center transition font-sans text-[9px] font-black uppercase flex items-center justify-center gap-1 cursor-pointer ${
+                              selectedSequencesToWin === 2
+                                ? 'bg-cyan-50 border-[#3ab3c2] text-[#3ab3c2] shadow-xs'
+                                : 'bg-white border-slate-200 hover:border-slate-300 text-slate-650'
+                            }`}
+                          >
+                            🏆 2 Seqs
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   {/* Single Player Mode card */}
                   <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex items-center justify-between hover:border-slate-250 transition">
                     <div className="flex items-center gap-4">

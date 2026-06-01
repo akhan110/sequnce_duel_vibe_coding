@@ -72,7 +72,7 @@ export const loginAnonymously = async () => {
     const result = await signInAnonymously(auth);
     return result.user;
   } catch (error) {
-    console.error("Anonymous login failed:", error);
+    console.warn("Anonymous login is disabled or unavailable; falling back to simulation.", error);
     throw error;
   }
 };

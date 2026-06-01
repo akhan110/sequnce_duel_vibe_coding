@@ -90,8 +90,25 @@ export default function App() {
             setAuthError(null);
           })
           .catch((err: any) => {
-            console.warn("Auto anonymous login failed:", err);
-            setAuthError(err?.message || "Anonymous login failed");
+            console.warn("Auto anonymous login failed, activating local simulation profile:", err);
+            const msg = err?.message || "";
+            if (msg.includes("admin-restricted-operation")) {
+              setAuthError("Anonymous sign-in is disabled in your Firebase Console.");
+            } else {
+              setAuthError(msg || "Anonymous login failed");
+            }
+            
+            // Automatically log them in as a simulated user so local offline play/bot modes work instantly out-of-the-box
+            const simulatedId = `sim_guest_${Math.floor(Math.random()*8999)+1000}`;
+            const simulatedUser = {
+              uid: simulatedId,
+              displayName: `GuestPlayer#${Math.floor(Math.random()*900)+100}`,
+              photoURL: null,
+              isAnonymous: true,
+              isSimulated: true
+            };
+            setUser(simulatedUser as any);
+            setUserName(simulatedUser.displayName);
           })
           .finally(() => {
             setIsLoggingIn(false);
@@ -137,8 +154,25 @@ export default function App() {
       setUser(u);
       setUserName(u.displayName || `GuestPlayer#${Math.floor(Math.random()*900)+100}`);
     } catch (err: any) {
-      console.warn("Manual anonymous login failed:", err);
-      setAuthError(err?.message || "Anonymous login failed");
+      console.warn("Manual anonymous login failed, activating local simulation profile:", err);
+      const msg = err?.message || "";
+      if (msg.includes("admin-restricted-operation")) {
+        setAuthError("Anonymous sign-in is disabled in your Firebase Console.");
+      } else {
+        setAuthError(msg || "Anonymous login failed");
+      }
+
+      // Automatically log them in as a simulated user so the lobby opens seamlessly
+      const simulatedId = `sim_guest_${Math.floor(Math.random()*8999)+1000}`;
+      const simulatedUser = {
+        uid: simulatedId,
+        displayName: `GuestPlayer#${Math.floor(Math.random()*900)+100}`,
+        photoURL: null,
+        isAnonymous: true,
+        isSimulated: true
+      };
+      setUser(simulatedUser as any);
+      setUserName(simulatedUser.displayName);
     } finally {
       setIsLoggingIn(false);
     }
@@ -146,7 +180,10 @@ export default function App() {
 
   // 2. Query other waiting game lobbies for online list
   useEffect(() => {
-    if (!user) return;
+    if (!user || (user as any).isSimulated) {
+      setIsLoadingRooms(false);
+      return;
+    }
     setIsLoadingRooms(true);
 
     const q = query(
@@ -334,6 +371,10 @@ export default function App() {
   // Handlers for lobby actions
   const handleHostOnline = async (name: string, color: ChipColor, maxPlayers: number = 2, sequencesToWin: number = 2) => {
     if (!user) return;
+    if ((user as any).isSimulated) {
+      alert("⚠️ Simulation Mode: Online multiplayer is currently running as an offline demo because Anonymous Sign-In is disabled. Please enable Anonymous Auth under the Authentication tab in your Firebase Console (or sign in with Google) to create and share rooms real-time!");
+      return;
+    }
 
     try {
       const roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -388,6 +429,10 @@ export default function App() {
 
   const handleJoinOnline = async (name: string, color: ChipColor, roomId: string) => {
     if (!user) return;
+    if ((user as any).isSimulated) {
+      alert("⚠️ Simulation Mode: Online multiplayer is currently running as an offline demo because Anonymous Sign-In is disabled. Please enable Anonymous Auth under the Authentication tab in your Firebase Console (or sign in with Google) to join real-time match lobbies!");
+      return;
+    }
     try {
       const docRef = doc(db, 'games', roomId);
       const snap = await getDoc(docRef);
@@ -942,6 +987,12 @@ export default function App() {
     setSelectedCard(null);
   };
 
+  const handleCellClick = React.useCallback((r: number, c: number) => {
+    if (selectedCard) {
+      handlePlayCardOnCell(r, c, selectedCard);
+    }
+  }, [selectedCard, currentGame?.id, soundEnabled]);
+
   // Dead card recycler discard handler
   const handleDiscardDeadCard = (cardId: string) => {
     if (!currentGame) return;
@@ -1061,6 +1112,8 @@ export default function App() {
     setTimeout(() => setConfetti([]), 4000);
   };
 
+  const isPlayingGame = currentGame && currentGame.status !== 'waiting' && !isTransitioning;
+
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 selection:bg-rose-500 selection:text-white relative overflow-hidden flex flex-col justify-between">
       {/* Background Soft Color Halos */}
@@ -1137,7 +1190,7 @@ export default function App() {
 
               <button
                 onClick={handleLeaveGame}
-                className="bg-white border border-slate-200 hover:border-rose-300 text-xs font-mono uppercase tracking-widest text-slate-600 hover:text-rose-600 px-4 py-2 rounded-full transition shadow-sm cursor-pointer"
+                className="bg-white border border-slate-200 hover:border-rose-300 text-xs font-mono uppercase tracking-widest text-slate-650 hover:text-rose-600 px-4 py-2 rounded-full transition shadow-sm cursor-pointer"
               >
                 Quit duel
               </button>
@@ -1153,11 +1206,7 @@ export default function App() {
                 boardChips={currentGame.boardChips}
                 selectedCard={selectedCard}
                 winningSequences={currentGame.winningSequences}
-                onCellClick={(r, c) => {
-                  if (selectedCard) {
-                    handlePlayCardOnCell(r, c, selectedCard);
-                  }
-                }}
+                onCellClick={handleCellClick}
                 userColor={userColor}
               />
             </section>
@@ -1170,7 +1219,7 @@ export default function App() {
                 <div className="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-0.5">
                   <span className="text-[10px] font-mono tracking-widest uppercase text-slate-500 font-bold">Sequence Arena HUD</span>
                   <div className="flex items-center gap-1.5 font-mono text-xs text-[#e22d7a] bg-rose-50 px-2.5 py-1 rounded-full border border-[#e22d7a]/15">
-                    <Clock className="w-3.5 h-3.5 text-[#e22d7a] animate-spin-slow" />
+                    <Clock className="w-3.5 h-3.5 animate-spin-slow" />
                     <span>{turnTimeLeft}s</span>
                   </div>
                 </div>
@@ -1207,9 +1256,9 @@ export default function App() {
                                   ? 'bg-emerald-500 shadow-sm'
                                   : 'bg-blue-500 shadow-sm'
                             }`} />
-                            <span className="text-xs font-bold text-slate-800 font-mono">
+                            <span className="text-xs font-bold font-mono text-slate-800">
                               {plr.name}
-                              {teamLabel && <span className="text-[9px] font-sans text-slate-450 font-black tracking-wide ml-1">{teamLabel}</span>}
+                              {teamLabel && <span className="text-[9px] font-sans font-black tracking-wide ml-1 text-slate-450">{teamLabel}</span>}
                             </span>
                           </div>
 
@@ -1272,7 +1321,7 @@ export default function App() {
                     <button
                       key={item.e}
                       onClick={() => handleSendReaction(item.e)}
-                      className="bg-white hover:bg-rose-50 border border-slate-150 rounded-xl py-1.5 flex flex-col items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs gap-0.5"
+                      className="bg-white hover:bg-rose-50 border border-slate-150 rounded-xl py-1.5 flex flex-col items-center justify-center transition-all hover:scale-105 active:scale-95 cursor-pointer shadow-xs gap-0.5 text-[#1e293b]"
                     >
                       <span className="text-lg">{item.e}</span>
                       <span className="text-[7.5px] font-sans text-slate-500 capitalize leading-none font-bold">{item.l}</span>

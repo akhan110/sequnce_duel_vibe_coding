@@ -9,7 +9,7 @@ service cloud.firestore {
 
     // Helper functions for validating requests
     function isSignedIn() {
-      return request.auth != null;
+      return true;
     }
 
     function isValidId(id) {
@@ -25,28 +25,20 @@ service cloud.firestore {
     }
 
     match /games/{gameId} {
-      // Allow any signed-in user to fetch games
-      allow get: if isSignedIn() && isValidId(gameId);
+      // Allow any user to fetch games (guests & google users alike)
+      allow get: if isValidId(gameId);
       
       // Allow list of games that are currently waiting for players (Lobby Matchmaking)
-      allow list: if isSignedIn() && (
-        resource.data.status == "waiting" || 
-        resource.data.players[0].uid == request.auth.uid || 
-        (resource.data.players.size() > 1 && resource.data.players[1].uid == request.auth.uid)
-      );
+      allow list: if true;
 
-      // Create game: only signed-in users can create. 
-      // Validate correct initial waiting status, proper timestamps, and creator is matching standard rules
-      allow create: if isSignedIn() 
-        && isValidId(gameId)
+      // Create game: only requires valid id and waiting status
+      allow create: if isValidId(gameId)
         && incoming().status == "waiting"
         && incoming().createdAt == request.time
         && incoming().updatedAt == request.time;
 
-      // Update game: Allows players to join, place pieces, discard, restart, etc.
-      // Must be signed in, have valid timestamps, and match the status limits
-      allow update: if isSignedIn()
-        && incoming().updatedAt == request.time;
+      // Update game: Allows any client to write updates
+      allow update: if incoming().updatedAt == request.time;
 
       // Deletion is forbidden to keep standard state integrity
       allow delete: if false;

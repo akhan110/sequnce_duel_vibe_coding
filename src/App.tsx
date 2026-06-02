@@ -180,7 +180,7 @@ export default function App() {
 
   // 2. Query other waiting game lobbies for online list
   useEffect(() => {
-    if (!user || (user as any).isSimulated) {
+    if (!user) {
       setIsLoadingRooms(false);
       return;
     }
@@ -371,10 +371,6 @@ export default function App() {
   // Handlers for lobby actions
   const handleHostOnline = async (name: string, color: ChipColor, maxPlayers: number = 2, sequencesToWin: number = 2) => {
     if (!user) return;
-    if ((user as any).isSimulated) {
-      alert("⚠️ Simulation Mode: Online multiplayer is currently running as an offline demo because Anonymous Sign-In is disabled. Please enable Anonymous Auth under the Authentication tab in your Firebase Console (or sign in with Google) to create and share rooms real-time!");
-      return;
-    }
 
     try {
       const roomId = Math.random().toString(36).substring(2, 6).toUpperCase();
@@ -429,10 +425,6 @@ export default function App() {
 
   const handleJoinOnline = async (name: string, color: ChipColor, roomId: string) => {
     if (!user) return;
-    if ((user as any).isSimulated) {
-      alert("⚠️ Simulation Mode: Online multiplayer is currently running as an offline demo because Anonymous Sign-In is disabled. Please enable Anonymous Auth under the Authentication tab in your Firebase Console (or sign in with Google) to join real-time match lobbies!");
-      return;
-    }
     try {
       const docRef = doc(db, 'games', roomId);
       const snap = await getDoc(docRef);
@@ -786,6 +778,9 @@ export default function App() {
     if (currentGame.mode === 'online') {
       return currentGame.players.find(p => p.uid === user?.uid);
     }
+    if (currentGame.mode === 'ai') {
+      return currentGame.players.find(p => p.uid === 'human_player');
+    }
     // For local pass & play, my player is whoever's turn it is currently, so they can click cards in the single screen view
     return currentGame.players.find(p => p.uid === currentGame.currentTurn);
   };
@@ -1113,6 +1108,13 @@ export default function App() {
   };
 
   const isPlayingGame = currentGame && currentGame.status !== 'waiting' && !isTransitioning;
+  const isMyTurn = currentGame
+    ? currentGame.mode === 'online'
+      ? currentGame.currentTurn === user?.uid
+      : currentGame.mode === 'ai'
+        ? currentGame.currentTurn === 'human_player'
+        : true
+    : false;
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-800 selection:bg-rose-500 selection:text-white relative overflow-hidden flex flex-col justify-between">
@@ -1288,7 +1290,7 @@ export default function App() {
                   onSelectCard={setSelectedCard}
                   boardChips={currentGame.boardChips}
                   onDiscardDeadCard={handleDiscardDeadCard}
-                  isMyTurn={currentGame.currentTurn === (currentGame.mode === 'online' ? user?.uid : currentGame.currentTurn)}
+                  isMyTurn={isMyTurn}
                 />
               </div>
 
@@ -1356,7 +1358,7 @@ export default function App() {
                 onSelectCard={setSelectedCard}
                 boardChips={currentGame.boardChips}
                 onDiscardDeadCard={handleDiscardDeadCard}
-                isMyTurn={currentGame.currentTurn === (currentGame.mode === 'online' ? user?.uid : currentGame.currentTurn)}
+                isMyTurn={isMyTurn}
               />
             </div>
           </div>

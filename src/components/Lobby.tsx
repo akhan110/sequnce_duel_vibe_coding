@@ -261,7 +261,7 @@ export default function Lobby({
                   exit={{ opacity: 0, x: -10 }}
                   className="flex flex-col gap-5 h-full"
                 >
-                  {!user || (user as any).isSimulated ? (
+                  {!user ? (
                     <div className="flex flex-col gap-4 bg-slate-50 border border-slate-200 p-5 rounded-2xl">
                       <div className="flex items-start gap-3">
                         <div className="w-10 h-10 rounded-full bg-[#e22d7a]/10 flex items-center justify-center shrink-0">
@@ -275,22 +275,7 @@ export default function Lobby({
                         </div>
                       </div>
 
-                      {user && (user as any).isSimulated && (
-                        <div className="bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-xl p-3.5 text-xs flex flex-col gap-1.5 text-left">
-                          <div className="flex items-center gap-2 font-bold font-mono text-[10px] uppercase text-emerald-800 tracking-wider">
-                            <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping shrink-0" />
-                            Offline Guest Profile Active
-                          </div>
-                          <p className="text-emerald-800 text-[11px] font-sans leading-relaxed">
-                            You are temporarily running in <strong>Offline Guest Mode</strong> as <code className="bg-emerald-100 font-mono text-[10px] px-1 py-0.5 rounded text-emerald-850">{nickname}</code>. Offline Modes (Strategic AI and Local Pass & Play) are fully functional under the other tab!
-                          </p>
-                          <p className="text-emerald-800 text-[11px] font-sans">
-                            👇 To unlock live real-time multiplayer, sign in using Google below.
-                          </p>
-                        </div>
-                      )}
-
-                      {authError && !(user && (user as any).isSimulated) && (
+                      {authError && (
                         <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-xl p-3.5 text-xs flex flex-col gap-2 text-left">
                           <div className="flex items-center gap-2 font-bold font-mono text-[10px] uppercase text-amber-805 tracking-wider">
                             <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
@@ -326,31 +311,27 @@ export default function Lobby({
                       )}
 
                       <div className="border-t border-slate-100 pt-4 flex flex-col gap-3 text-left">
-                        {(!user || !(user as any).isSimulated) && (
-                          <>
-                            <p className="text-[11px] text-slate-500 font-sans leading-relaxed">
-                              Sign in as a temporary guest player to instantly access multiplayer game lobbies:
-                            </p>
-                            <button
-                              onClick={onRetryAnonymousLogin}
-                              disabled={isLoggingIn}
-                              className="w-full bg-[#3ab3c2] hover:bg-[#2d9ba9] text-white rounded-xl py-3 px-4 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2.5 transition shadow-sm cursor-pointer disabled:opacity-50"
-                            >
-                              {isLoggingIn ? (
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                <Gamepad2 className="w-4 h-4 text-cyan-100" />
-                              )}
-                              Enter Play Room as Guest
-                            </button>
+                        <p className="text-[11px] text-slate-500 font-sans leading-relaxed">
+                          Sign in as a temporary guest player to instantly access multiplayer game lobbies:
+                        </p>
+                        <button
+                          onClick={onRetryAnonymousLogin}
+                          disabled={isLoggingIn}
+                          className="w-full bg-[#3ab3c2] hover:bg-[#2d9ba9] text-white rounded-xl py-3 px-4 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2.5 transition shadow-sm cursor-pointer disabled:opacity-50"
+                        >
+                          {isLoggingIn ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <Gamepad2 className="w-4 h-4 text-cyan-100" />
+                          )}
+                          Enter Play Room as Guest
+                        </button>
 
-                            <div className="flex items-center my-1.5 opacity-60">
-                              <hr className="flex-1 border-slate-200" />
-                              <span className="text-[9px] text-slate-400 font-mono px-3 uppercase tracking-widest shrink-0">AUTHENTICATE CHANNELS</span>
-                              <hr className="flex-1 border-slate-200" />
-                            </div>
-                          </>
-                        )}
+                        <div className="flex items-center my-1.5 opacity-60">
+                          <hr className="flex-1 border-slate-200" />
+                          <span className="text-[9px] text-slate-400 font-mono px-3 uppercase tracking-widest shrink-0">AUTHENTICATE CHANNELS</span>
+                          <hr className="flex-1 border-slate-200" />
+                        </div>
 
                         <p className="text-[11px] text-slate-500 font-sans leading-relaxed">
                           Sign in with Google Account — Google Auth is already fully configured for your app and works out-of-the-box:
@@ -372,7 +353,7 @@ export default function Lobby({
                   ) : (
                     <div className="flex flex-col gap-5 h-full">
                       {/* Active Auth Profile Indicator */}
-                      <div className="bg-slate-50 px-4 py-3 border border-slate-200 rounded-2xl flex items-center justify-between">
+                      <div className="bg-slate-50 px-4 py-3 border border-slate-200 rounded-2xl flex items-center justify-between animate-fade-in">
                         <div className="flex items-center gap-3 text-left w-full">
                           <div className="w-9 h-9 rounded-full bg-slate-900 border border-slate-200 overflow-hidden flex items-center justify-center text-white font-mono text-xs font-bold leading-none shrink-0 shadow-sm">
                             {user.photoURL ? (
@@ -388,11 +369,26 @@ export default function Lobby({
                               </span>
                             </div>
                             
-                            {/* Updated to hide actual email, showing connection details + Ludo Star status */}
-                            <span className="text-[9px] text-[#3ab3c2] font-extrabold font-mono uppercase flex items-center gap-1 mt-0.5">
-                              <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
-                              Lobby: Available to Play
-                            </span>
+                            {(user as any).isSimulated ? (
+                              <div className="flex flex-col gap-1 mt-0.5">
+                                <span className="text-[9px] text-orange-600 font-extrabold font-mono uppercase flex items-center gap-1">
+                                  <span className="w-2 h-2 rounded-full bg-orange-400 animate-pulse"></span>
+                                  Guest Play Mode
+                                </span>
+                                <button
+                                  onClick={onGoogleLogin}
+                                  disabled={isLoggingIn}
+                                  className="text-[9px] font-bold text-indigo-600 hover:text-indigo-800 underline text-left cursor-pointer flex items-center gap-1"
+                                >
+                                  <Sparkles className="w-2.5 h-2.5" /> Bind with Google account
+                                </button>
+                              </div>
+                            ) : (
+                              <span className="text-[9px] text-[#3ab3c2] font-extrabold font-mono uppercase flex items-center gap-1 mt-0.5">
+                                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+                                Lobby: Available to Play
+                              </span>
+                            )}
                           </div>
                         </div>
                         
@@ -558,7 +554,10 @@ export default function Lobby({
                   </div>
 
                   {/* Single Player Mode card */}
-                  <div className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex items-center justify-between hover:border-slate-250 transition">
+                  <div 
+                    onClick={() => onJoinLocalAI(nickname, chipColor, selectedMaxPlayers, selectedSequencesToWin)}
+                    className="bg-slate-50 border border-slate-200 p-5 rounded-2xl flex flex-col gap-4 hover:border-[#3ab3c2] hover:bg-slate-50/30 transition cursor-pointer"
+                  >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center shrink-0">
                         <Cpu className="w-6 h-6 text-[#3ab3c2]" />
@@ -571,10 +570,13 @@ export default function Lobby({
                       </div>
                     </div>
                     <button 
-                      onClick={() => onJoinLocalAI(nickname, chipColor, selectedMaxPlayers, selectedSequencesToWin)}
-                      className="bg-[#3ab3c2] hover:bg-[#35abb7] text-white p-3 rounded-full transition shrink-0 shadow-sm cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onJoinLocalAI(nickname, chipColor, selectedMaxPlayers, selectedSequencesToWin);
+                      }}
+                      className="w-full bg-[#3ab3c2] hover:bg-[#35abb7] text-white py-2.5 rounded-full text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 transition cursor-pointer"
                     >
-                      <Play className="w-4 h-4 fill-current" />
+                      <Play className="w-4 h-4 fill-current" /> Play Against Strategic AI
                     </button>
                   </div>
 
